@@ -2,45 +2,21 @@ use glyphon::{
     fontdue::{
         Font, FontSettings,
     },
-    Color, HasColor, Resolution, TextAtlas, TextRenderer,
+    Resolution, TextAtlas, TextRenderer,
 };
-use wgpu::{CommandEncoderDescriptor, LoadOp, Operations, RenderPassColorAttachment, RenderPassDescriptor, TextureViewDescriptor};
 use winit::{
     event::{Event, WindowEvent, VirtualKeyCode},
     event_loop::{ControlFlow, EventLoop},
     window::{Window},
 };
 use winit_input_helper::WinitInputHelper;
-use crate::layout::context::RenderContext;
-use crate::layout::renderable::Renderable;
-use crate::line::line_handler::LineHandler;
-use crate::screen::Screen;
+use crate::layout::lines::Lines;
+use crate::layout::screen::Screen;
+use crate::render::context::RenderContext;
+use crate::render::{FontData, FontStorage};
+use crate::render::renderer::Renderer;
 
 pub const BACKGROUND_COLOR: wgpu::Color = wgpu::Color::BLACK;
-
-#[derive(Clone, Copy)]
-struct GlyphUserData;
-
-impl HasColor for GlyphUserData {
-    fn color(&self) -> Color {
-        Color {
-            r: 255,
-            g: 255,
-            b: 255,
-            a: 255,
-        }
-    }
-}
-
-pub struct FontStorage {
-    pub fonts: Vec<Font>
-}
-
-pub struct FontData {
-    pub atlas: TextAtlas,
-    pub renderer: TextRenderer,
-    pub font_storage: FontStorage
-}
 
 pub async fn run(event_loop: EventLoop<()>, window: Window) {
     let instance = wgpu::Instance::new(wgpu::Backends::all());
@@ -99,12 +75,12 @@ pub async fn run(event_loop: EventLoop<()>, window: Window) {
     };
 
     let screen: Screen = Screen {
-        line_handler: LineHandler::default()
+        line_handler: Lines::default()
     };
 
     let mut input = WinitInputHelper::new();
 
-    let mut context = RenderContext {
+    let context = RenderContext {
         device,
         queue,
         font_data,
@@ -112,6 +88,12 @@ pub async fn run(event_loop: EventLoop<()>, window: Window) {
             width: config.width,
             height: config.height,
         }
+    };
+
+    let mut renderer = Renderer {
+        context,
+        screen,
+        surface
     };
 
     event_loop.run(move |event, _, control_flow| {
@@ -129,38 +111,11 @@ pub async fn run(event_loop: EventLoop<()>, window: Window) {
             } => {
                 config.width = size.width;
                 config.height = size.height;
-                surface.configure(&context.device, &config);
+                renderer.surface.configure(&renderer.context.device, &config);
                 window.request_redraw();
             }
             Event::RedrawRequested(_) => {
-
-
-
-                screen.render(&mut context);
-
-                let frame = surface.get_current_texture().unwrap();
-                let view = frame.texture.create_view(&TextureViewDescriptor::default());
-                let mut encoder =
-                    context.device.create_command_encoder(&CommandEncoderDescriptor { label: None });
-                {
-                    let mut pass = encoder.begin_render_pass(&RenderPassDescriptor {
-                        label: None,
-                        color_attachments: &[Some(RenderPassColorAttachment {
-                            view: &view,
-                            resolve_target: None,
-                            ops: Operations {
-                                load: LoadOp::Clear(BACKGROUND_COLOR),
-                                store: true,
-                            },
-                        })],
-                        depth_stencil_attachment: None,
-                    });
-
-                    context.font_data.renderer.render(&context.font_data.atlas, &mut pass).unwrap();
-                }
-
-                context.queue.submit(Some(encoder.finish()));
-                frame.present();
+                renderer.render();
             }
             _ => {}
         }

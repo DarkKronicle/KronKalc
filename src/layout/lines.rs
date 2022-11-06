@@ -1,26 +1,30 @@
 use fontdue::layout::Layout;
 use glyphon::{Color, TextOverflow};
-use crate::layout::context::RenderContext;
-use crate::line::content::LineContent;
-use crate::layout::renderable::Renderable;
-use crate::text::{Format, LayoutAble};
+use crate::render::context::RenderContext;
+use crate::render::Renderable;
+use crate::text::{LayoutAble, Text};
+use crate::text::literal_text::{Format, LiteralText};
 
-pub struct LineHandler {
-    lines: Vec<LineContent>,
+pub struct Lines {
+    lines: Vec<Text>,
 }
 
-impl Default for LineHandler {
+impl Default for Lines {
 
     fn default() -> Self {
-        LineHandler {
-            lines: vec![LineContent::of(String::from("Hello there!"), Color {r: 255, g: 255, b: 255, a: 255}, 30.)]
+        Lines {
+            lines: vec![Text::of(
+                LiteralText::of(String::from("Hello there!"), Color {r: 255, g: 255, b: 255, a: 255}, 30.),
+                2f32,
+                2f32
+            )]
         }
     }
 
 }
 
-impl Renderable for LineHandler {
-    fn render(&self, context: &mut RenderContext) {
+impl Renderable for Lines {
+    fn render(&mut self, context: &mut RenderContext) {
 
         let mut layouts: Vec<(Layout<Format>, TextOverflow)> = Vec::<(Layout<Format>, TextOverflow)>::new();
         let mut y: f32 = 0.;

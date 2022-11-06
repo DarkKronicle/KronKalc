@@ -1,6 +1,6 @@
 use glyphon::Resolution;
 use wgpu::{Device, Queue};
-use crate::renderer::FontData;
+use crate::render::FontData;
 
 pub struct RenderContext {
 

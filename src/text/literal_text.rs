@@ -1,16 +1,11 @@
 use fontdue::layout::{CoordinateSystem, Layout, LayoutSettings, TextStyle};
 use glyphon::{Color, HasColor};
-use crate::layout::context::RenderContext;
+use crate::render::context::RenderContext;
+use crate::text::LayoutAble;
 
-
-pub trait LayoutAble {
-
-    fn get_layout(&self, context: &mut RenderContext, x: f32, y: f32) -> Layout<Format>;
-
-}
 
 #[derive(Clone)]
-pub struct Text {
+pub struct LiteralText {
     pub content: String,
     pub format: Format,
 }
@@ -21,9 +16,9 @@ pub struct Format {
     pub size: f32
 }
 
-impl Text {
+impl LiteralText {
     pub fn of(content: String, color: Color, size: f32) -> Self {
-        Text {
+        LiteralText {
             content,
             format: Format {
                 color,
@@ -33,13 +28,7 @@ impl Text {
     }
 }
 
-impl HasColor for Format {
-    fn color(&self) -> Color {
-        return self.color;
-    }
-}
-
-impl LayoutAble for Text {
+impl LayoutAble for LiteralText {
 
     fn get_layout(&self, context: &mut RenderContext, x: f32, y: f32) -> Layout<Format> {
         let mut layout = Layout::new(CoordinateSystem::PositiveYDown);
@@ -62,5 +51,10 @@ impl LayoutAble for Text {
         return layout;
     }
 
+}
 
+impl HasColor for Format {
+    fn color(&self) -> Color {
+        return self.color;
+    }
 }
