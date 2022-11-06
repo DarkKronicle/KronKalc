@@ -1,0 +1,15 @@
+[package]
+name = "kron_kalc"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+fontdue = { git = "https://github.com/mooman219/fontdue", rev = "828b4f4" }
+glyphon = { git = "https://github.com/grovesNL/glyphon.git", version = "0.2.0" }
+pollster = "0.2.5"
+skia-safe = "0.55.0"
+wgpu = "0.14.0"
+winit = "0.27.5"
+winit_input_helper = "0.13.0"
